@@ -1,0 +1,91 @@
+{
+  "kind": "handwritten_reward_examples_not_model_evaluation",
+  "commit": "8cee13ec0ca72f0461da372a93a6fd8140dbb840",
+  "python": "3.14.6",
+  "settings": {
+    "WITHLENGTH": "0",
+    "REFINEDREWARD": "0",
+    "COARSEREWARD": "0",
+    "STRICTMATCH": "0",
+    "CORRECTMAX1": "0",
+    "MAX1STEP30MAX3": "0",
+    "SCHEDULEREWARD": "0",
+    "SCHEDULELENGTH": "0",
+    "INTERMEDIATEREWARD": "0",
+    "EXPERIMENT_NAME": "inspect-qwen-default-reward"
+  },
+  "cases": [
+    {
+      "case": "工具和参数完全正确",
+      "prediction": "<think>Query the requested city.</think>\n<tool_call>\n{\"name\": \"get_weather\", \"parameters\": {\"city\": \"Beijing\"}}\n</tool_call>",
+      "ground_truth": "<think>Query the requested city.</think>\n<tool_call>\n{\"name\": \"get_weather\", \"parameters\": {\"city\": \"Beijing\"}}\n</tool_call>",
+      "total": 4.0,
+      "format": 1.0,
+      "correctness": 3.0,
+      "length": 0
+    },
+    {
+      "case": "工具正确但城市错误",
+      "prediction": "<think>Query the requested city.</think>\n<tool_call>\n{\"name\": \"get_weather\", \"parameters\": {\"city\": \"Shanghai\"}}\n</tool_call>",
+      "ground_truth": "<think>Query the requested city.</think>\n<tool_call>\n{\"name\": \"get_weather\", \"parameters\": {\"city\": \"Beijing\"}}\n</tool_call>",
+      "total": 2.0,
+      "format": 1.0,
+      "correctness": 1.0,
+      "length": 0
+    },
+    {
+      "case": "工具正确但缺少参数",
+      "prediction": "<think>Query the requested city.</think>\n<tool_call>\n{\"name\": \"get_weather\", \"parameters\": {}}\n</tool_call>",
+      "ground_truth": "<think>Query the requested city.</think>\n<tool_call>\n{\"name\": \"get_weather\", \"parameters\": {\"city\": \"Beijing\"}}\n</tool_call>",
+      "total": 0.0,
+      "format": 1.0,
+      "correctness": -1.0,
+      "length": 0
+    },
+    {
+      "case": "选错工具",
+      "prediction": "<think>Query the requested city.</think>\n<tool_call>\n{\"name\": \"get_time\", \"parameters\": {\"city\": \"Beijing\"}}\n</tool_call>",
+      "ground_truth": "<think>Query the requested city.</think>\n<tool_call>\n{\"name\": \"get_weather\", \"parameters\": {\"city\": \"Beijing\"}}\n</tool_call>",
+      "total": -2.0,
+      "format": 1.0,
+      "correctness": -3.0,
+      "length": 0
+    },
+    {
+      "case": "调用正确但缺少 think 标签",
+      "prediction": "<tool_call>\n{\"name\": \"get_weather\", \"parameters\": {\"city\": \"Beijing\"}}\n</tool_call>",
+      "ground_truth": "<think>Query the requested city.</think>\n<tool_call>\n{\"name\": \"get_weather\", \"parameters\": {\"city\": \"Beijing\"}}\n</tool_call>",
+      "total": 3.0,
+      "format": 0.0,
+      "correctness": 3.0,
+      "length": 0
+    },
+    {
+      "case": "格式标签正确但 JSON 无效",
+      "prediction": "<think>Query.</think>\n<tool_call>\nnot-json\n</tool_call>",
+      "ground_truth": "<think>Query the requested city.</think>\n<tool_call>\n{\"name\": \"get_weather\", \"parameters\": {\"city\": \"Beijing\"}}\n</tool_call>",
+      "total": -2.0,
+      "format": 1.0,
+      "correctness": -3.0,
+      "length": 0
+    },
+    {
+      "case": "需要调用工具却直接回答",
+      "prediction": "<think>Respond.</think>\n<response>Beijing</response>",
+      "ground_truth": "<think>Query the requested city.</think>\n<tool_call>\n{\"name\": \"get_weather\", \"parameters\": {\"city\": \"Beijing\"}}\n</tool_call>",
+      "total": -3.0,
+      "format": 0.0,
+      "correctness": -3.0,
+      "length": 0
+    },
+    {
+      "case": "纯回答目标但回答内容不同",
+      "prediction": "<think>Respond.</think>\n<response>Shanghai</response>",
+      "ground_truth": "<think>Respond.</think>\n<response>Beijing</response>",
+      "total": 1.0,
+      "format": 1.0,
+      "correctness": 0.0,
+      "length": 0
+    }
+  ]
+}

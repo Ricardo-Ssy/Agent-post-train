@@ -1,0 +1,21 @@
+# Local system and Python environment files
+.DS_Store
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Local credentials; example configuration can be versioned
+.env
+.env.*
+!.env.example
+
+# Generated training artifacts
+wandb/
+checkpoints/
+runs/
+*.safetensors
+*.ckpt
+*.pt
+*.pth
