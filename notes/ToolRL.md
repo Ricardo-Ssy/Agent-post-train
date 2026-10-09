@@ -154,7 +154,7 @@ PY
 
 **资源与依赖。** 论文附录报告每次训练使用 2 张 A100 80GB。上游 GRPO 脚本也默认使用两张 GPU、512 个输入、每输入 4 个生成、2048 的输入长度上限和 1024 的输出长度上限。这是原实验配置，不是已测定的最低硬件需求。[论文附录](https://arxiv.org/html/2504.13958v1#A2)；[本地训练脚本](https://github.com/qiancheng0/ToolRL/blob/8cee13ec0ca72f0461da372a93a6fd8140dbb840/examples/grpo_trainer/run_grpo.sh)
 
-仓库安装示例使用 CUDA 版 PyTorch 2.4.0、vLLM 0.6.3、Ray 和 FlashAttention。准备训练时应建立独立环境，先核对设备与兼容性；不能直接将这套默认环境视为 CPU 或 MPS 方案。[上游 README](https://github.com/qiancheng0/ToolRL/blob/8cee13ec0ca72f0461da372a93a6fd8140dbb840/README.md)
+仓库安装示例使用 CUDA 版 PyTorch 2.4.0、vLLM 0.6.3、Ray 和 FlashAttention。准备训练时应在工作区根目录的 `.envs/toolrl/` 建立独立环境，先核对设备与兼容性；不能直接将这套默认环境视为 CPU 或 MPS 方案。目前仅约定环境路径，尚未创建训练环境或安装依赖；创建方式见[根目录 README](../README.md#独立环境)。[上游 README](https://github.com/qiancheng0/ToolRL/blob/8cee13ec0ca72f0461da372a93a6fd8140dbb840/README.md)
 
 **参数并非填完模型路径就结束。** [train_grpo.sh](https://github.com/qiancheng0/ToolRL/blob/8cee13ec0ca72f0461da372a93a6fd8140dbb840/train_grpo.sh)中的模型与实验名称仍是占位符。奖励解析器通过 `EXPERIMENT_NAME` 是否包含小写 `qwen` 或 `llama` 选择处理方式；随意命名可能触发异常。顶层脚本还会覆盖多个奖励开关，因此仅在外部先 `export` 开关可能不起作用。
 

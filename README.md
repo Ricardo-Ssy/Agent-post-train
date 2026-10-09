@@ -13,6 +13,7 @@
 Agent-post-train/
 ├── README.md                     # 学习入口和项目索引
 ├── AGENTS.md                     # AI 助手的协作规则
+├── .envs/                        # 各 repo 的本地独立环境，按需创建
 ├── repos/
 │   └── ToolRL/                   # 官方代码，独立 Git 仓库
 └── notes/
@@ -37,6 +38,21 @@ git submodule update --init --recursive
 ```
 
 本仓库公开，可直接浏览和下载。ToolRL 内部的代码改动需要在其独立仓库中管理；主仓库记录子模块版本，不会自动保存子模块内尚未提交的改动。
+
+## 独立环境
+
+各 repo 的环境统一放在工作区根目录的 `.envs/<项目名>/`，例如 ToolRL 使用 `.envs/toolrl/`。不同 repo 不共用环境，只有实际运行项目时才创建对应环境。当前仅保留目录占位文件，尚未安装训练依赖。
+
+建议使用 Conda 按路径创建环境，便于各 repo 使用不同的 Python 版本。先安装 Conda，并根据上游依赖要求确定 Python 版本；在工作区根目录执行以下命令，将 `X.Y` 替换为所需版本：
+
+```bash
+conda create --prefix "$PWD/.envs/toolrl" python=X.Y
+conda activate "$PWD/.envs/toolrl"
+```
+
+激活后，进入 `repos/ToolRL/`，按上游说明安装依赖；其他 repo 使用各自的环境目录。Python、PyTorch、CUDA 等版本需结合项目要求和设备确认，实际安装命令与验证结果记录在 `notes/<项目名>.md`。
+
+`.envs/` 仅提交 `.gitkeep` 占位文件，实际环境全部由 `.gitignore` 排除，不随仓库上传或下载。依赖声明沿用各 repo 的 `requirements.txt`、`environment.yml` 等文件（如有）；更换机器后按依赖声明和项目笔记重建环境。
 
 ## 项目进度
 

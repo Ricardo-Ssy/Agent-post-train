@@ -4,6 +4,8 @@ __pycache__/
 *.py[cod]
 .venv/
 venv/
+.envs/*
+!.envs/.gitkeep
 .ipynb_checkpoints/
 
 # Local credentials; example configuration can be versioned
