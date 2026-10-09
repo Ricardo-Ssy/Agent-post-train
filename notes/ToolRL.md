@@ -1,4 +1,4 @@
-# ToolRL 入门与代码导读
+# ToolRL 学习笔记
 
 ToolRL 适合作为理解“数据如何变成奖励，再如何驱动 GRPO 更新”的第一个项目。先读一条数据、算清一次奖励，再追训练流程，可以减少一开始被分布式训练框架淹没的情况。
 
@@ -71,10 +71,55 @@ flowchart LR
 
 这里有两个值得理解的边界：**格式错误不一定让工具正确性分归零**；对于不含工具调用的标注，代码直接将工具正确性分设为 0，**不会验证最终回答的事实正确性**。因此，训练奖励高不等于整体任务完成得好。
 
-示例脚本：[inspect_reward.py](examples/inspect_reward.py)。保存结果：[reward_scores.json](examples/reward_scores.json)。脚本只需 Python 标准库，未安装训练依赖。可在工作区根目录运行：
+上述结果在 2026 年 10 月 9 日使用 Python 3.14.6 得到，评分步数为 0，奖励变体全部关闭。它们只用于理解评分规则，不是模型能力评估。
+
+要重算这 8 个例子，在工作区根目录运行下面整段代码即可。只使用 Python 标准库，直接调用固定版本的上游函数，不需要安装训练环境，也不生成额外文件。
 
 ```bash
-python3 notes/toolrl/examples/inspect_reward.py
+python3 - <<'PY'
+import contextlib
+import importlib.util
+import io
+import json
+import os
+import sys
+from pathlib import Path
+
+sys.dont_write_bytecode = True
+for key in ("WITHLENGTH", "REFINEDREWARD", "COARSEREWARD", "STRICTMATCH",
+            "CORRECTMAX1", "MAX1STEP30MAX3", "SCHEDULEREWARD",
+            "SCHEDULELENGTH", "INTERMEDIATEREWARD"):
+    os.environ[key] = "0"
+os.environ["EXPERIMENT_NAME"] = "inspect-qwen-default-reward"
+path = Path("repos/ToolRL/verl/utils/reward_score/rlla.py")
+spec = importlib.util.spec_from_file_location("toolrl_reward", path)
+reward = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(reward)
+
+def tool_output(name="get_weather", parameters=None):
+    if parameters is None:
+        parameters = {"city": "Beijing"}
+    call = json.dumps({"name": name, "parameters": parameters})
+    return "<think>Query the requested city.</think>\n<tool_call>\n" + call + "\n</tool_call>"
+
+target = tool_output()
+response = "<think>Respond.</think>\n<response>Beijing</response>"
+cases = [
+    ("工具和参数完全正确", target, target),
+    ("工具正确但城市错误", tool_output(parameters={"city": "Shanghai"}), target),
+    ("工具正确但缺少参数", tool_output(parameters={}), target),
+    ("选错工具", tool_output(name="get_time"), target),
+    ("调用正确但缺少 think 标签", target.split("\n", 1)[1], target),
+    ("格式标签正确但 JSON 无效", "<think>Query.</think>\n<tool_call>\nnot-json\n</tool_call>", target),
+    ("需要调用工具却直接回答", response, target),
+    ("纯回答目标但回答内容不同", response.replace("Beijing", "Shanghai"), response),
+]
+print("示例 | 格式 | 正确性 | 总分")
+for label, prediction, ground_truth in cases:
+    with contextlib.redirect_stdout(io.StringIO()):
+        total, fmt, correct, length = reward.compute_score(prediction, ground_truth, step=0)
+    print(f"{label} | {fmt:g} | {correct:g} | {total:g}")
+PY
 ```
 
 ## GRPO 怎样利用这些分数
@@ -117,10 +162,23 @@ python3 notes/toolrl/examples/inspect_reward.py
 
 **评估仍需适配。** API-Bank 脚本含输出路径占位符，BFCL 目录提供模型适配代码，Bamboogle 脚本涉及外部服务。训练验证分数、工具调用匹配率与完整任务成功率要分别记录，不能直接互换。
 
+## 我的设备与复现安排
+
+2026 年 10 月 9 日检查的本机配置为 MacBook Pro、Apple M4、24 GB 统一内存。
+
+| 要做的事 | 当前安排 |
+| --- | --- |
+| 读代码、处理数据、计算奖励 | 在本机完成；上面的奖励示例已验证 |
+| 小模型生成工具调用 | 可尝试通过 MLX 运行 1.5B 或 3B 量化模型，尚未进行本机验证 |
+| 官方 GRPO 或 PPO 训练 | 使用远程 Linux 和 NVIDIA GPU；当前 CUDA 训练环境不能直接在 Mac GPU 上运行 |
+| 估算完整复现费用 | 先短时试跑，测每步耗时和显存，再按 GPU 数量 × 小时单价 × 占用时长计算 |
+
+本机推理需要适配 Apple 芯片的运行方式；不能把量化推理或 LoRA 练习视为已经复现官方训练。[MLX 说明](https://github.com/ml-explore/mlx-lm)；[vLLM 0.6.3 环境要求](https://docs.vllm.ai/en/v0.6.3/getting_started/installation.html)
+
 ## 当前进度与下一步
 
 - 已完成：官方代码下载与版本记录，数据字段和条目数检查，默认奖励、GRPO 主调用路径与评估入口阅读。
-- 已执行：8 个手写样例直接调用上游奖励函数，结果已保存。
+- 已执行：8 个手写样例直接调用上游奖励函数，代码与结果统一记录在本文中。
 - 未执行：模型下载、生成推理、训练、BFCL/API-Bank/Bamboogle 评估。
 
 下一次从一条 RL 样本入手，依次解释工具描述、历史、标注和奖励；随后用一组候选输出手算相对优势。准备训练时，再根据实际可用的 GPU 与预算决定模型规模和验证配置。
