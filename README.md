@@ -36,7 +36,7 @@ git clone --recurse-submodules https://github.com/Ricardo-Ssy/Agent-post-train.g
 git submodule update --init --recursive
 ```
 
-私有仓库需要使用有访问权限的 GitHub 账号下载。ToolRL 内部的代码改动需要在其独立仓库中管理；主仓库记录子模块版本，不会自动保存子模块内尚未提交的改动。
+本仓库公开，可直接浏览和下载。ToolRL 内部的代码改动需要在其独立仓库中管理；主仓库记录子模块版本，不会自动保存子模块内尚未提交的改动。
 
 ## 项目进度
 
